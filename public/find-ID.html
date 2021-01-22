@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>아이디 찾기</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="/public/FindID_form/images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/css/main.css">
+<!--===============================================================================================-->
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+	$(function(){
+		$('#send_certification_code').on("click", function(){
+            
+            // 필요한 정보 저장
+			var s_email = $('#email').val();
+			var regExp =  /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i; // 이메일 유효성
+            
+            // 서버와 통신
+			$.ajax({
+				data : {email : s_email},
+				url : "/process/getCode",
+				type : 'POST',
+				success : function(data)
+				{
+                    
+                    // 이메일을 입력하지 않았을 시
+					if(s_email == "")
+					{
+						alert('Enter your email');
+						setTimeout(function(){
+								location.reload();
+						},200);
+
+					}
+                    
+                    // 이메일 입력에 이상 없을 시
+					else if(data == '0')
+					{
+                        // 유효성을 만족 한다면
+						if(s_email.match(regExp) != null)
+						{
+                            // 코드 전송
+							alert('Code has been sent');
+                            $('#email').attr('readonly', true);
+							$('#verifyDiv').css("display", "block");
+							$('#send_certification_code').css("display", "none");
+							$('#certification_check').css("display", "block");
+							$('#certification_check').css("background-color", "aqua");
+							$(function(){
+								$('#certification_check').on("click", function(){
+                                    
+                                    // 필요한 정보 저장
+									var s_code = $('#certification_code').val();
+									var s_email = $('#email').val();
+                                    
+                                    // 서버와 통신
+									$.ajax({
+										data : {certification_code : s_code, email : s_email},
+										url : "/event/check_code",
+										type : 'POST',
+										success : function(data)
+										{
+                                            // 코드 입력을 하지 않았을 시
+											if(s_code == "")
+											{
+												alert('Enter code you received');
+												$('#findID_button').attr('disabled', true);
+											}
+                                            
+                                            // 코드가 일치할 시
+											else if(data == '0')
+											{
+												alert('Certified');
+												$('#certification_check').css("display", "none");
+												$('#findID_button').css("display", "block");
+												$('#findID_button').css("background-color", "#81c147");
+												$('#findID_button').attr('disabled', false);
+												$('#email').attr('readonly', true);
+												$('#certification_code').attr('readonly', true);
+											}
+                                            
+                                            // 코드가 일치하지 않거나 ID가 존재하지 않을 시
+											else
+											{
+												alert('Wrong code or non-existent ID');
+												$('#findID_button').attr('disabled', true);
+											}
+										},
+                                        
+                                        // 예외 발생
+										error : function(error){
+											alert("error : " + error);
+										}
+									});
+								});
+							});
+						}
+                        
+                        // 이메일의 유효성이 만족하지 않을 시
+						else
+						{
+							alert('Invalid email');
+							setTimeout(function(){
+									location.reload();
+							},200);
+						}
+					}
+				},
+                
+                // 예외 발생
+				error : function(error){
+					alert("error : " + error);
+				}
+			});
+		});
+	});
+</script>
+</head>
+<body>
+
+
+	<div class="container-login100" style="background-image: url('/public/FindID_form/images/bg-01.jpg');">
+		<div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
+			<form class="login100-form validate-form" action="/process/findID" method="post">
+				<span class="login100-form-title p-b-37">
+					Find ID
+				</span>
+
+				<div class="wrap-input100 validate-input m-b-20" data-validate="Enter email or check form">
+					<input class="input100" type="text" id="email" name="email" placeholder="email">
+					<span class="focus-input100"></span>
+				</div>
+
+				<div id="check_email"></div>
+
+				<div class="wrap-input100 validate-input m-b-25" data-validate = "Enter code" id="verifyDiv" style="display:none;">
+					<input class="input100" type="text" id="certification_code" name="certification_code" placeholder="code">
+					<span class="focus-input100"></span>
+				</div>
+
+				<div class="container-login100-form-btn">
+					<button class="login100-form-btn" type="button" id="send_certification_code" name="send_certification_code">
+						Send code
+					</button>
+				</div>
+
+				<div class="container-login100-form-btn">
+					<button class="login100-form-btn" type="button" id="certification_check" name="certification_check" style="display: none;">
+						Certification
+					</button>
+				</div>
+
+				<div class="container-login100-form-btn">
+					<button class="login100-form-btn" type="submit" id="findID_button" name="findID_button" style="display: none;" disabled="disabled">
+						Find ID
+					</button>
+				</div>
+
+
+
+				<div class="flex-c p-b-112"></div>
+
+				<div class="text-center">
+					<a href="/public/login.html" class="txt2 hov1">
+						Go login page
+					</a>
+				</div>
+
+			</form>
+
+
+		</div>
+	</div>
+
+
+
+	<div id="dropDownSelect1"></div>
+
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/bootstrap/js/popper.js"></script>
+	<script src="/public/FindID_form/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/daterangepicker/moment.min.js"></script>
+	<script src="/public/FindID_form/vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/js/main.js"></script>
+
+</body>
+</html>

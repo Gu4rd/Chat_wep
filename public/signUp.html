@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Colorlib Templates">
+    <meta name="author" content="Colorlib">
+    <meta name="keywords" content="Colorlib Templates">
+
+    <!-- Title Page-->
+    <title>회원가입</title>
+
+    <!-- Icons font CSS-->
+    <link href="/public/signUp_form/vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
+    <link href="/public/signUp_form/vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <!-- Font special for pages-->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Vendor CSS-->
+    <link href="/public/signUp_form/vendor/select2/select2.min.css" rel="stylesheet" media="all">
+    <link href="/public/signUp_form/vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
+
+    <!-- Main CSS-->
+    <link href="/public/signUp_form/css/main.css" rel="stylesheet" media="all">
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript">
+      const can_signup = [0, 0, 0, 0, 0];
+      var certification = 0;
+    // ID 중복 확인
+    	$(function(){
+    		$("input[name='id']").on("change", function(){
+                
+                // 필요한 정보 저장
+    			var s_id = $('#id').val();
+                var regExpId = /^[0-9a-z]+$/; // ID 유효성
+                
+                // 서버와 통신
+    			$.ajax({
+    				data : {id : s_id
+    				},
+    				url : "/event/check_ID",
+                    type : 'POST',
+    				success : function(data) {
+                        
+                        // 아이디를 입력하지 않았을 시
+    					if(data == ""){
+                            $("#validation_ID").css('color', 'red');
+    						$("#validation_ID").text("Enter your ID");
+    						can_signup[0] = 0;
+    					}
+                        
+                        // 아이디 입력 완료 시
+    					else if(data == '0'){
+                            
+                            // 길이가 적절할 시
+    						if(s_id.length >= 4 && s_id.length <= 12)
+    						{
+                                // 유효성에 만족한다면
+                                if(s_id.match(regExpId) != null)
+                                {
+                                    $("#validation_ID").css('color', 'blue');
+                                    $("#validation_ID").text("A great ID !");
+    							    can_signup[0] = 1;
+                                }
+                                
+                                // 유효성에 만족하지 않을 시
+                                else
+                                {
+                                    $("#validation_ID").css('color', 'red');
+                                    $("#validation_ID").text("Invalid ID");
+                                    can_signup[0] = 0;
+                                }
+    						}
+                        
+                            // 길이에 문제가 있을 시
+                            else
+    						{
+                                $("#validation_ID").css('color', 'red');
+    							$("#validation_ID").text("Only 4 ~ 12 letters");
+    							can_signup[0] = 0;
+    						}
+    					}
+                        
+                        // 아이디가 이미 존재할 시
+    					else if(data == '1'){
+                            $("#validation_ID").css('color', 'red');
+    						if(s_id.length >= 4 && s_id.length <= 12)
+    							$("#validation_ID").text("ID already in use");
+    						else
+    							$("#validation_ID").text("Only 4 ~ 12 letters");
+    						can_signup[0] = 0;
+    					}
+    				},
+                    // 예외 발생
+    				error : function(error){
+    					alert("error : " + error);
+    					can_signup[0] = 0;
+    				}
+    			});
+    		});
+    	});
+
+    // 닉네임 중복 확인
+    	$(function(){
+    		$("input[name='nickname']").on("change", function(){
+                
+                // 필요한 정보 저장
+    			var s_nickname = $('#nickname').val();
+                var regExpId = /^[가-힣a-zA-Z0-9]+$/; // 닉네임 유효성
+                
+                // 서버와 통신
+    			$.ajax({
+    				data : {nickname : s_nickname},
+    				url : "/event/check_Nickname",
+    				type : "POST",
+    				success : function(data) {
+                        
+                        // 닉네임을 입력하지 않았을 시
+    					if(data == ""){
+    						can_signup[1] = 0;
+                            $("#validation_Nickname").css('color', 'red');
+    						$("#validation_Nickname").text("Enter your Nickname");
+    					}
+                        
+                        // 닉네임을 입력하였을 시
+    					else if(data == '0'){
+                            
+                            // 길이가 적절할 시
+    						if(s_nickname.length >= 3 && s_nickname.length <= 10)
+    						{
+                                // 닉네임 금칙어
+                                if(s_nickname.includes('fuck') || s_nickname.includes('시발') || s_nickname.includes('sex') || s_nickname.includes('섹스') || s_nickname.includes('FUCK') || s_nickname.includes('Fuck') || s_nickname.includes('운영자') || s_nickname.includes('admin')
+                                  || s_nickname.includes('Admin') || s_nickname.includes('pussy') || s_nickname.includes('dick') || s_nickname.includes('Pussy') || s_nickname.includes('Dick') || s_nickname.includes('보지') || s_nickname.includes('자지') || s_nickname.includes('개새끼')
+                                  || s_nickname.includes('병신') || s_nickname.includes('좆') || s_nickname.includes('운영진'))
+                                {
+                                    can_signup[1] = 0;
+                                    $("#validation_Nickname").css('color', 'red');
+    						        $("#validation_Nickname").text("Be Kind");
+                            
+                                }
+                                
+                                // 닉네임 유효성 만족시
+                                else if(s_nickname.match(regExpId) != null)
+                                {
+                                    can_signup[1] = 1;
+                                    $("#validation_Nickname").css('color', 'blue');
+                                    $("#validation_Nickname").text("A great Nickname !");
+                                }
+                                
+                                // 유효성에 만족하지 않을 시
+                                else
+                                {
+                                    can_signup[1] = 0;
+                                    $("#validation_Nickname").css('color', 'red');
+                                    $("#validation_Nickname").text("Invalid Nickname");
+                                }
+    						}
+                            // 길이가 적절하지 않을 시
+    						else
+    						{
+    							can_signup[1] = 0;
+                                $("#validation_Nickname").css('color', 'red');
+    							$("#validation_Nickname").text("Only 3 ~ 10 letters");
+    						}
+    					}
+                        
+                        // 닉네임이 이미 존재할 시
+    					else if(data == '1')
+    					{
+                            $("#validation_Nickname").css('color', 'red');
+    						can_signup[1] = 0;
+    						if(s_nickname.length >= 3 && s_nickname.length <= 10)
+    							$("#validation_Nickname").text("Nickname already in use");
+    						else
+    							$("#validation_Nickname").text("Only 3 ~ 10 letters");
+    					}
+    				},
+                    
+                    // 예외 발생
+    				error : function(error){
+    					can_signup[1] = 0;
+    					alert("error : " + error);
+    				}
+    			});
+    		});
+    	});
+
+    // 비밀번호 유효성 검사
+    	$(function(){
+    		$("input[name='password']").on("change", function(){
+                
+                // 필요한 정보 저장 및 패스워드 유효성
+    			var s_password = $('#password').val();
+    			var num = s_password.search(/[0-9]/g);
+    			var eng = s_password.search(/[a-z]/ig);
+    			var spe = s_password.search(/[`~!@@#$%^&*|₩₩₩'₩";:₩/?]/gi);
+                
+                // 패스워드를 입력하지 않았을 시
+                if(s_password == "")
+                {
+                    can_signup[2] = 0;
+                    $("#validation_password").css('color', 'red');
+                    $("#validation_password").text("Enter your Password");
+                }
+                
+                // 길이가 적절하지 않을 시
+    			else if(s_password.length < 8 || s_password.length > 20)
+    			{
+    				can_signup[2] = 0;
+                    $("#validation_password").css('color', 'red');
+    				$("#validation_password").text("At least 8 letters");
+    			}
+                
+                // 공백을 입력하였을 시
+    			else if(s_password.search(/\s/) != -1)
+    			{
+    				can_signup[2] = 0;
+                    $("#validation_password").css('color', 'red');
+    				$("#validation_password").text("You can't enter space !");
+    			}
+                
+                // 조건에 만족하지 않을 시
+    			else if(num < 0 || eng < 0 || spe < 0)
+    			{
+    				can_signup[2] = 0;
+                    $("#validation_password").css('color', 'red');
+    				$("#validation_password").text("Please make a mixed password");
+    			}
+                
+                // 성공
+    			else
+    			{
+    				can_signup[2] = 1;
+                    $("#validation_password").css('color', 'blue');
+    				$("#validation_password").text("GOOD");
+    			}
+    		});
+    	});
+
+    // 비밀번호 확인 일치하는지
+    	$(function(){
+    		$("input[name='password2']").on("change", function(){
+                
+                // 필요한 정보 저장
+    			var s_password = $('#password').val();
+    			var s_password2 = $('#password2').val();
+                
+                // 패스워드가 일치할 시
+    			if(s_password == s_password2)
+    			{
+                    // 1번 패스워드에 문제가 있을 시
+    				if(can_signup[2] == 0)
+    				{
+    					can_signup[3] = 0;
+                        $("#validation_password2").css('color', 'red');
+    					$("#validation_password2").text("Please enter it correctly");
+    				}
+    				else
+    				{
+    					can_signup[3] = 1;
+                        $("#validation_password2").css('color', 'blue');
+    					$("#validation_password2").text("GOOD");
+    				}
+    			}
+                
+                // 패스워드가 일치하지 않을 시
+    			else
+    			{
+                    can_signup[3] = 0;
+                    $("#validation_password2").css('color', 'red');
+                    
+                    // 2번 패스워드를 입력하지 않았을 시
+                    if(s_password2 == "")
+                    {
+                        $("#validation_password2").text("Enter your Password");
+                    }
+    				else $("#validation_password2").text("It doesn't match");
+    			}
+    		});
+    	});
+
+    // 이메일 유효성 검사
+    	$(function(){
+    		$("input[name='email']").on("change", function(){
+                
+                // 필요한 정보 저장
+    			var s_email = $('#email').val();
+    			var regExp =  /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i; // 이메일 유효성
+                
+                $("#send_code_button").attr('disabled', true);
+                $("#send_code_button_div").css('display', 'block');
+                $("#resend_code_button_div").css('display', 'none');
+                $("#send_code_button").attr('disabled', true);
+                $("#send_code_button").css('border', 'none');
+                $("#show_check_code_div").css('display', 'none');
+                
+                // 서버와 통신
+                $.ajax({
+                    data : {email : s_email},
+                    url : "/event/check_Email",
+                    type : 'POST',
+                    success : function(data){
+                        
+                        // 이메일을 입력하지 않았을 시
+                        if(data == "")
+                        {
+                          can_signup[4] = 0;
+                            $("#validation_email").css('color', 'red');
+                            $("#validation_email").text("Enter your Email address");
+
+                        }
+                        
+                        // 이메일을 입력하였을 시
+                        else if(data == '0')
+                        {
+                            // 이메일 유효성을 만족한다면
+                            if(s_email.match(regExp) != null)
+                            {
+                                can_signup[4] = 1;
+                                $("#validation_email").css('color', 'blue');
+                                $("#validation_email").text("You can proceed with authentication");
+                                $("#send_code_button").attr('disabled', false);
+                                $("#send_code_button").css('border', 'black solid 2px');
+                            }
+                            
+                            // 이메일 유효성을 만족하지 않을 시
+                            else
+                            {
+                                can_signup[4] = 0;
+                                $("#validation_email").css('color', 'red');
+                                $("#validation_email").text("Invalid Email");
+                            }
+                        
+                        }
+                        
+                        // 이미 이메일이 존재할 시
+                        else if(data == '1')
+                        {
+                            can_signup[4] = 0;
+                            $("#validation_email").css('color', 'red');
+                            $("#validation_email").text("Email already in use");
+                        }
+                    }
+                });
+    		});
+    	});
+
+    // 코드 전송
+      $(function(){
+        $('#send_code_button').on("click", function(){
+            
+            // 필요한 정보 저장
+          var s_email = $('#email').val();
+            
+            // 서버와 통신
+          $.ajax({
+            data : {email: s_email},
+            url : "/event/send_code_signUp",
+            type : 'POST',
+            success : function(data){
+                
+                // 코드 전송에 문제가 없을 시
+              if(data == "0")
+              {
+                alert('Code has been sent');
+                $('#resend_code_button_div').css('display', 'block');
+                $('#resend_code_button').attr('disabled', false);
+                $('#send_code_button_div').css('display', 'none');
+                $('#send_code_button').attr('disabled', true);
+                $('#show_check_code_div').css('display', 'flex');
+                $('#check_code_button').attr('disabled', false);
+              }
+            }
+          });
+        });
+      });
+
+    // 코드 재전송
+      $(function(){
+        $('#resend_code_button').on("click", function(){
+            
+            // 필요한 정보 저장
+          var s_email = $('#email').val();
+            
+            // 서버와 통신
+          $.ajax({
+            data : {email: s_email},
+            url : "/event/send_code_signUp",
+            type : 'POST',
+            success : function(data){
+                
+                // 코드 전송에 문제가 없을 시
+              if(data == "0")
+              {
+                alert('Code has been sent');
+                $('#resend_code_button_div').css('display', 'block');
+                $('#resend_code_button').attr('disabled', false);
+                $('#send_code_button_div').css('display', 'none');
+                $('#send_code_button').attr('disabled', true);
+                $('#show_check_code_div').css('display', 'flex');
+                $('#check_code_button').attr('disabled', false);
+              }
+            }
+          });
+        });
+      });
+        
+        // 코드 인증
+      $(function(){
+        $('#check_code_button').on("click", function(){
+            
+            // 필요한 정보 저장
+          var s_email = $('#email').val();
+          var s_code = $('#code').val();
+            
+            // 서버와 통신
+          $.ajax({
+            data : {email: s_email, code: s_code},
+            url : "/event/check_code_signUp",
+            type: 'POST',
+            success : function(data){
+                
+                // 코드를 입력하지 않았을 시
+              if(s_code == "")
+              {
+                certification = 0;
+                alert('Enter your code');
+              }
+                
+                // 코드가 일치할 시
+              else if(data == "0")
+              {
+                certification = 1;
+                alert('Certified');
+                $('#email').attr('readonly', true);
+                $("#validation_email").css('color', '#81c147');
+                $("#validation_email").css('font-weight', 'bold');
+                $('#validation_email').text('Authorized Email')
+                $('#send_code_button_div').css('display', 'none');
+                $('#resend_code_button_div').css('display', 'none');
+                $('#show_check_code_div').css('display', 'none');
+              }
+                
+                // 코드가 일치하지 않을 시
+              else if(data == "1")
+              {
+                certification = 0;
+                alert('Wrong code');
+              }
+            }
+          });
+        });
+      });
+
+    // 회원가입 버튼 이벤트
+    	$(function(){
+    		$('#signup').click(function(){
+                
+                // 회원가입에 필요한 모든 정보 만족 시
+    			if(can_signup[0] && can_signup[1] && can_signup[2] && can_signup[3] && can_signup[4] && certification)
+    			{
+    				$('#signup').attr('type', 'submit');
+    				alert('SUCCESS');
+    			}
+    			else
+    			{
+    				$('#signup').attr('type', 'button');
+    				alert('Please check your form or Certification')
+    			}
+    		});
+    	});
+    </script>
+</head>
+
+<body>
+    <div class="page-wrapper bg-01 p-t-130 p-b-100 font-poppins">
+        <div class="wrapper wrapper--w680">
+            <div class="card card-4">
+                <div class="card-body">
+                  <img src="/public/signUp_form/images/images.png" style="height: 100px; width: 100px; max-width: 200px; max-height: 200px;">
+                    <form method="POST">
+                        <div class="row row-space">
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">ID</label>
+                                    <input class="input--style-4" type="text" id="id" name="id" maxlength="12">
+                                    <div style="color: grey; font-size: 12px">Only 4 ~ 12 lowercase letters and numbers</div>
+                                    <div style="font-size: 14px;" id="validation_ID"></div>
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Nickname</label>
+                                    <input class="input--style-4" type="text" id="nickname" name="nickname" maxlength="10">
+                                    <div style="color: grey; font-size: 12px">Only 3 ~ 10 letters and numbers</div>
+                                    <div style="font-size: 14px;" id="validation_Nickname"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row row-space">
+                          <div class="col-2">
+                              <div class="input-group">
+                                  <label class="label">Email</label>
+                                  <input class="input--style-4" type="email" id="email" name="email">
+                                  <div style="color: grey; font-size: 12px">You must enter this form for certification</div>
+                                  <div style="font-size: 14px;" id="validation_email"></div>
+                                  <div class="p-t-15" id="send_code_button_div">
+                                      <button class="btn btn--radius-2" type="button" id="send_code_button" name="send_code_button "disabled="disabled" style="background-color: #81c147;">Send code</button>
+                                  </div>
+                                  <div class="p-t-15" id="resend_code_button_div" style="display: none;">
+                                      <button class="btn btn--radius-2" type="button" id="resend_code_button" name="resend_code_button" disabled="disabled" style="background-color: aqua;">Send Again</button>
+                                  </div>
+
+                              </div>
+                          </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Gender</label>
+                                    <div class="p-t-10">
+                                        <label class="radio-container m-r-45">Male
+                                            <input type="radio" checked="checked" id="gender" name="gender">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <label class="radio-container">Female
+                                            <input type="radio" name="gender">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row row-space" id="show_check_code_div" style="display: none;">
+                          <div class="col-2">
+                              <div class="input-group">
+                                  <label class="label">Code</label>
+                                  <input class="input--style-4" type="text" id="code" name="code">
+                                  <div style="color: grey; font-size: 12px">Enter code you got</div>
+                                  <div style="font-size: 14px;" id="validation_email"></div>
+                              </div>
+                          </div>
+                          <div class="col-2">
+                              <div class="p-t-30">
+                                <button class="btn btn--radius-2" type="button" id="check_code_button" name="check_code_button" disabled="disabled" style="background-color: #123;">Check</button>
+                              </div>
+                          </div>
+                        </div>
+
+                        <div class="row row-space">
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Password</label>
+                                    <input class="input--style-4" type="password" id="password" name="password" maxlength="20">
+                                    <div style="color: grey; font-size: 12px">At least 8 letters mixed alphabet, numbers and special character</div>
+                                    <div style="font-size: 14px;" id="validation_password"></div>
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="input-group">
+                                    <label class="label">Password check</label>
+                                    <input class="input--style-4" type="password" id="password2" name="password2" maxlength="20">
+                                    <div style="color: grey; font-size: 12px">Check your password</div>
+                                    <div style="font-size: 14px;" id="validation_password2"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-t-15">
+                            <button class="btn btn--radius-2 btn--blue" type="submit" id="signup" onclick = "javascript: form.action='/process/signUp'">SIGN UP</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jquery JS-->
+    <script src="/public/signUp_form/vendor/jquery/jquery.min.js"></script>
+    <!-- Vendor JS-->
+    <script src="/public/signUp_form/vendor/select2/select2.min.js"></script>
+    <script src="/public/signUp_form/vendor/datepicker/moment.min.js"></script>
+    <script src="/public/signUp_form/vendor/datepicker/daterangepicker.js"></script>
+
+    <!-- Main JS-->
+    <script src="/public/signUp_form/js/global.js"></script>
+
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+
+</html>
+<!-- end document-->

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>비밀번호 재설정</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="/public/changePW_form/images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/public/changePW_form/css/main.css">
+<!--===============================================================================================-->
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+const can_change = [0,0];
+$(function(){
+	$('#check_Email').on("click", function(){
+        
+        // 필요한 정보 저장
+		var s_id = $('#id').val();
+		var s_email = $('#email').val();
+		var regExp =  /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i; // 이메일 유효성
+        
+        // 서버와 통신
+		$.ajax({
+			data : { id : s_id, email : s_email},
+			url : "/process/getCode_withID",
+			type : 'POST',
+			success : function(data)
+			{
+                // 필요한 정보를 입력하지 않았을 시
+				if(s_id == "" || s_email == "")
+				{
+                    // 입력명령 문구와 함께 리로드
+					alert('Enter ID or Email');
+					setTimeout(function(){
+							location.reload();
+					},200);
+				}
+                
+                // 정보가 존재할 시
+				else if(data == '0')
+				{
+                    // 이메일이 유효성에 위배되지 않을 시
+					if(s_email.match(regExp) != null)
+					{
+                        // 코드 전송과 함께 CSS 변경
+						alert('Code has been sent');
+						$('#verifyDiv').css("display", "block");
+						$('#id').attr('readonly', true);
+						$('#email').attr('readonly', true);
+						$('#check_Email').css("display", "none");
+						$('#check_Code').css("display", "block");
+					}
+				}
+                
+                // 입력한 정보가 없을 시
+				else if(data == '1')
+				{
+                    // 문구와 함께 리로드
+					alert('ID or Email does not exist');
+					setTimeout(function(){
+							location.reload();
+					},200);
+				}
+			},
+            
+            // 예외 발생 시
+			error : function(error){
+				alert("error : " + error);
+			}
+		});
+	});
+});
+
+// 코드 인증 시
+$(function(){
+	$('#check_Code').on("click", function(){
+        
+        // 필요한 정보 저장
+		var s_code = $('#certification_code').val();
+		var s_email = $('#email').val();
+        
+        // 서버와 통신
+		$.ajax({
+			data : {certification_code : s_code, email : s_email},
+			url : "/event/check_code",
+			type : 'POST',
+			success : function(data)
+			{
+                // 코드를 입력하지 않았을 시
+				if(s_code == "")
+				{
+					alert('Enter code you received');
+					$('.new_password').css({'display':'none'});
+				}
+                
+                // 코드가 일치할 시
+				else if(data == '0')
+				{
+					alert('Certified');
+					$('#id').attr('readonly', true);
+					$('#email').attr('readonly', true);
+					$('#certification_code').attr('readonly', true);
+					$('.new_password').css({'display':'block'});
+					$('#check_Code').css("display", "none");
+					$('#change_password_button').css("display", "block");
+					$('#change_password_button').attr("disabled", false);
+				}
+                
+                // 코드가 일치하지 않을 시
+				else if(data == '1')
+				{
+					alert('Wrong code or non-existent ID, Email');
+					$('.new_password').css({'display':'none'});
+				}
+			},
+			error : function(error){
+				alert("error : " + error);
+			}
+		});
+	});
+});
+
+// 비밀번호 변경 시 유효성 검사
+	$(function(){
+		$("input[name='password']").on("change", function(){
+            
+            // 필요한 정보 저장 및 패스워드 유효성
+			var s_password = $('#password').val();
+			var num = s_password.search(/[0-9]/g);
+			var eng = s_password.search(/[a-z]/ig);
+			var spe = s_password.search(/[`~!@@#$%^&*|₩₩₩'₩";:₩/?]/gi);
+            
+            // 패스워드를 입력하지 않았을 시
+			if(s_password == "")
+			{
+				can_change[0] = 0;
+				$("#validation_password").css('color', 'red');
+				$("#validation_password").text("Enter new password");
+			}
+            
+            // 패스워드 길이가 맞지 않을 시
+			else if(s_password.length < 8 || s_password.length > 20)
+			{
+				can_change[0] = 0;
+				$("#validation_password").css('color', 'red');
+				$("#validation_password").text("Follow the guide");
+			}
+            
+            // 공백을 포함 시켰을 시
+			else if(s_password.search(/\s/) != -1)
+			{
+				can_change[0] = 0;
+				$("#validation_password").css('color', 'red');
+				$("#validation_password").text("You can't enter space !");
+			}
+            
+            // 가이드라인에 만족하지 않았을 시
+			else if(num < 0 || eng < 0 || spe < 0)
+			{
+				can_change[0] = 0;
+				$("#validation_password").css('color', 'red');
+				$("#validation_password").text("Please make a mixed password");
+			}
+            
+            // 성공
+			else
+			{
+				can_change[0] = 1;
+				$("#validation_password").css('color', 'blue');
+				$("#validation_password").text("GOOD !");
+			}
+		});
+	});
+
+// 비밀번호 확인 일치하는지
+	$(function(){
+		$("input[name='password2']").on("change", function(){
+            
+            // 필요한 정보 저장
+			var s_password = $('#password').val();
+			var s_password2 = $('#password2').val();
+            
+            // 입력한 비밀번호와 일치할 시
+			if(s_password == s_password2)
+			{
+				if(can_change[0] == 0)
+				{
+					can_change[1] = 0;
+					$("#validation_password2").css('color', 'red');
+					$("#validation_password2").text("Please enter it correctly");
+				}
+				else
+				{
+					can_change[1] = 1;
+					$("#validation_password2").css('color', 'blue');
+					$("#validation_password2").text("GOOD !");
+				}
+			}
+            
+            // 일치하지 않을 시
+			else
+			{
+				can_change[1] = 0;
+				$("#validation_password2").css('color', 'red');
+				if(s_password2 == "")
+				{
+					$("#validation_password2").text("Enter your Password");
+				}
+				else $("#validation_password2").text("It does not match");
+			}
+		});
+	});
+
+    
+    // 비밀번호 변경 버튼 클릭 시
+	$(function(){
+		$('#change_password_button').click(function(){
+            
+            // 모든 조건에 만족 한다면
+			if(can_change[0] && can_change[1])
+			{
+				$('#change_password_button').attr('type', 'submit');
+				alert('Your password has been changed');
+			}
+            // 조건 만족 못할 시
+			else
+			{
+				$('#change_password_button').attr('type', 'button');
+				alert('Invalid form');
+			}
+		});
+	});
+	</script>
+</head>
+<body>
+
+
+	<div class="container-login100" style="background-image: url('/public/changePW_form/images/bg-01.jpg');">
+		<div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
+			<form class="login100-form validate-form" method="post">
+				<span class="login100-form-title p-b-37">
+					Reset Password
+				</span>
+
+				<div class="wrap-input100 validate-input m-b-15" data-validate="Enter ID  or check form">
+					<input class="input100" type="text" id="id" name="id" placeholder="ID">
+					<span class="focus-input100"></span>
+				</div>
+
+				<div class="wrap-input100 validate-input m-b-15" data-validate = "Enter Email  or check form">
+					<input class="input100" type="text" id="email" name="email" placeholder="Email">
+					<span class="focus-input100"></span>
+				</div>
+
+				<div id="verifyDiv" class="wrap-input100 validate-input m-b-15" data-validate = "Enter code" style="display: none;">
+					<input class="input100" type="text" id="certification_code" name="certification_code" placeholder="Code">
+					<span class="focus-input100"></span>
+				</div>
+
+				<div class="wrap-input100 validate-input m-b-15 new_password" data-validate = "Enter Password  or check form" style="display: none;">
+					<input class="input100" type="password" id="password" name="password" placeholder="Password" maxlength="20">
+					<span class="focus-input100"></span>
+				</div>
+				<div id="validation_password" class="m-b-15 m-l-10" style="font-size: 14px;"></div>
+
+				<div class="wrap-input100 validate-input m-b-15 new_password" data-validate = "Enter Password check  or check form" style="display: none;">
+					<input class="input100" type="password" id="password2" name="password2" placeholder="Password check" maxlength="20">
+					<span class="focus-input100"></span>
+				</div>
+
+
+				<div id="validation_password2" class="m-b-15 m-l-10" style="font-size: 14px;"></div>
+
+				<div class="container-login100-form-btn">
+					<button class="login100-form-btn" type="button" id="check_Email" name="check_Email">
+						Send code
+					</button>
+				</div>
+
+				<div class="container-login100-form-btn">
+					<button class="login100-form-btn" type="button" id="check_Code" name="check_Code" style="background-color: aqua; display: none;">
+						Certification
+					</button>
+				</div>
+
+				<div class="container-login100-form-btn">
+					<button class="login100-form-btn" type="submit" disabled="disabled" id="change_password_button" onclick = "javascript: form.action='/process/change_password'" style="background-color: #81c147; display: none;">
+						Reset
+					</button>
+				</div>
+
+
+				<div class="text-center p-t-57 p-b-20"><span style="font-weight: bold; color:red;">Guide</span> : You must enter At least 8 letters mixed alphabet, numbers and special character as <span style="font-weight: bold; color: blue;">PASSWORD</span> </div>
+				<div class="text-center">
+					<a href="/public/login.html" class="txt2 hov1">Go login page</a>/
+					<a href="/public/find-ID.html" class="txt2 hov1">Find ID page</a>
+				</div>
+			</form>
+
+
+		</div>
+	</div>
+
+
+
+	<div id="dropDownSelect1"></div>
+
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/vendor/bootstrap/js/popper.js"></script>
+	<script src="/public/changePW_form/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/vendor/daterangepicker/moment.min.js"></script>
+	<script src="/public/changePW_form/vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/changePW_form/js/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>채팅 로비</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	  <script src="/public/chatting_form/js/main.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <style media="screen">
+      .roomletters{
+        font-size: 17px;
+        font-weight: bold;
+      }
+    </style>
+	<script type="text/javascript">
+        var newWindow = "";
+      function PopupCenter(url, title, w, h) {
+        // Fixes dual-screen position                         Most browsers      Firefox
+        var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+        var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+        var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+        var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+        var left = ((width / 2) - (w / 2)) + dualScreenLeft;
+        var top = ((height / 2) - (h / 2)) + dualScreenTop;
+        newWindow = window.open(url, title, 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+        // Puts focus on the newWindow
+        if (window.focus) {
+          newWindow.focus();
+        }
+      }
+      $(function(){
+        $('#makeRoom').on("click", function(){
+          PopupCenter("/public/chatting.html", "a", "600", "400");
+        });
+      });
+	  $(function(){
+		$('#joinRoom').on("click", function(){
+		  PopupCenter("/public/join_chatting.html","a","600","400");
+		});
+	  });
+	  $(function(){
+		$('#refreshRoom').on("click", function(){
+			window.location.reload();
+		});
+	  });
+
+      $(function(){
+        $('#logoutButton').on("click", function(){
+            var s_nickname = "";
+            s_nickname = "<%= nickname %>";
+            $.ajax({
+                data : {nickname : s_nickname},
+                url : "/process/logout",
+                type: "POST"
+            });
+            location.href = "/public/login.html";
+        });
+      });
+
+        // 강제로 로비 페이지를 닫았을 때 로그아웃과 함께 열린 채팅창을 강제로 닫음
+      window.onunload = function(){
+          var s_nickname = "";
+          s_nickname = "<%= nickname %>";
+          $.ajax({
+              data : {nickname : s_nickname},
+              url : "/process/logout",
+              type: "POST"
+          });
+          newWindow.close();
+      }
+      
+      // 페이지가 로드되면 DB로부터의 정보를 ejs페이지에 렌더링함
+		window.onload = function(){
+			<%for(let i=0; i < rooms.length; i++){ %>
+				var YesOrNo = "";
+				if(<%= rooms[i].password%> == "0000"){
+					YesOrNo = "No";
+				}else{
+					YesOrNo = "Yes";
+				}
+        console.log(YesOrNo);
+        var roomname = "";
+				roomname = "<%= rooms[i].name%>";
+				$('#rooms').append('<div class="col-12 shadow p-2 mt-2"><div class="row col-12"><div class="col-3 roomletters">'+<%= rooms[i].number%>+'</div><div class="col-5 roomletters">'+roomname+'</div><div class="col-2 roomletters">'+<%= rooms[i].people%>+'</div><div class="col-2 roomletters">'+YesOrNo+'</div></div></div>');
+			<%}%>
+
+      <%for(let i=0; i < users.length; i++){ %>
+        var username = "";
+        username = "<%= users[i].nickname%>";
+        $('#showNickname').append('<div class="shadow p-2 m-3 rounded" style="font-size: 17px; font-weight: bold;">'+username+'</div>');
+      <%}%>
+		}
+    </script>
+  </head>
+
+  <body style="padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; height: 100vh; background-image: url('/public/login_form/images/bg-01.jpg'); background-repeat: no-repeat; background-attachment: fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;">
+    <div class="row">
+      <div id="left-side" class="col-2" style="">
+
+      </div>
+      <div id="frame" class="col-8" style="min-width: 1202px;">
+        <div class="row" style="">
+          <a href="/public/index.html">
+            <div class="col-2 rounded shadow" style="min-width: 200px; max-width: 200px; height:100px; background-image: url('/public/signUp_form/images/images.png'); no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;"></div>
+          </a>
+
+          <div class="col-6 rounded" style="min-width: 600px;">
+
+          </div>
+          <div class="col-4 rounded" style="min-width: 400px;">
+
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12" style="z-index: 1; height: 25px;">
+
+          </div>
+        </div>
+        <div class="row" style="min-height: 600px;">
+          <div class="col-8 rounded shadow" style="background-color: white; padding: 0 0 0 0;">
+            <div class="col-12 text-white bg-dark" style="border-bottom: 3px solid black;">
+              <div class="row col-12" style="font-size:20px">
+                <div class="col-3" style="font-weight: bold;">
+                  Number
+                </div>
+                <div class="col-5" style="font-weight: bold;">
+                  Room Name
+                </div>
+                <div class="col-2" style="font-weight: bold;">
+                  People
+                </div>
+                <div class="col-2" style="font-weight: bold;">
+                  Lock
+                </div>
+              </div>
+            </div>
+            <div class="overflow-auto" id="rooms" style="height:524px;">
+            </div>
+            <div class="">
+              <div class="col-12" style="text-align: center; border-top: 3px solid black; min-height: 50px; z-index: 1; position: absolute; top: 558px;">
+                <button type="button" class="btn btn-primary border border-dark shadow" id="refreshRoom" name="refreshRoom" style="margin-right:50px;">Refresh</button>
+                <button type="button" class="btn btn-success border border-dark shadow" id="joinRoom" name="joinRoom" style="margin-right:50px;">Join room</button>
+                <button type="button" class="btn btn-danger border border-dark shadow" id="makeRoom" name="MakeRoom">Make room</button>
+              </div>
+            </div>
+
+            <div class="row">
+
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="row" style="min-height: 600px;">
+              <div class="col-1">
+
+              </div>
+              <div class="col-10 rounded overflow-auto shadow" id="showNickname" style="text-align: center; background-color: white;">
+                <div class="p-2 m-3 bg-success rounded" style="color: white; font-size: 25px; font-weight: bold;">ONLINE</div>
+              </div>
+              <div class="col-1" style="">
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12" style=" z-index: 1; height: 25px;">
+
+          </div>
+        </div>
+        <div class="row" style="min-height: 200px; ">
+          <div class="col-8 rounded shadow" style=" background-color: black;" >
+            <div class="row">
+              <div class="col-12 notice" style="color: yellow;">
+                [Notice] This version is 1.0v
+              </div>
+              <div class="col-12 notice" style="color: yellow;">
+                [Notice] Enjoy chat
+              </div>
+              <div class="col-12 notice" style="color: yellow;">
+                [Notice] Admin uses only 2 nicknames <span style="font-weight: bold; color: red;">"운영자", "admin"</span> NOT "Admin", "ADMIN" etc.
+              </div>
+              <div class="col-12 notice" style="color: yellow;">
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="row" style="min-height: 200px;">
+              <div class="col-1" style="">
+
+              </div>
+              <div class="col-10 rounded shadow" style="background-color: white; text-align: center;">
+                <div class="">
+                  ID : <span id="id" style="color: red; font-weight: bold;"><%= id %></span>
+                </div>
+                <div class="">
+                  NICKNAME : <span id="nickname" style="color: blue; font-weight: bold;"><%= nickname %></span>
+                </div>
+                <div class="" style="height: 100px;">
+
+                </div>
+                <div class="">
+                  <button type="button" class="btn btn-dark border border-primary" id="logoutButton" name="logoutButton" style="width: 100%;">Log out</button>
+                </div>
+              </div>
+              <div class="col-1" style="">
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="right-side" class="col-2" style="">
+
+      </div>
+    </div>
+  </body>
+</html>

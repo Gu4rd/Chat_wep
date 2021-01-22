@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>닉네임 설정</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="/public/FindID_form/images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/public/FindID_form/css/main.css">
+<!--===============================================================================================-->
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $('#email').text(window.location.hash.substring(1));
+    });
+
+		const can_signup = [0, 0, 0, 0, 0];
+		var certification = 0;
+
+	// ID 중복 확인
+		$(function(){
+			$("input[name='id']").on("change", function(){
+				var s_id = $('#id').val();
+							var regExpId = /^[0-9a-z]+$/;
+				$.ajax({
+					data : {id : s_id
+					},
+					url : "/event/check_ID",
+									type : 'POST',
+					success : function(data) {
+						if(data == ""){
+													$("#validation_ID").css('color', 'red');
+							$("#validation_ID").text("Enter your ID");
+							can_signup[0] = 0;
+						}
+						else if(data == '0'){
+							if(s_id.length >= 4 && s_id.length <= 12)
+							{
+															if(s_id.match(regExpId) != null)
+															{
+																	$("#validation_ID").css('color', 'blue');
+																	$("#validation_ID").text("A great ID !");
+																	can_signup[0] = 1;
+															}
+															else
+															{
+																	$("#validation_ID").css('color', 'red');
+																	$("#validation_ID").text("Invalid ID");
+																	can_signup[0] = 0;
+															}
+							}
+											else
+							{
+															$("#validation_ID").css('color', 'red');
+								$("#validation_ID").text("Only 4 ~ 12 letters");
+								can_signup[0] = 0;
+							}
+						}
+						else if(data == '1'){
+													$("#validation_ID").css('color', 'red');
+							if(s_id.length >= 4 && s_id.length <= 12)
+								$("#validation_ID").text("ID already in use");
+							else
+								$("#validation_ID").text("Only 4 ~ 12 letters");
+							can_signup[0] = 0;
+						}
+					},
+					error : function(error){
+						alert("error : " + error);
+						can_signup[0] = 0;
+					}
+				});
+			});
+		});
+
+	// 닉네임 중복 확인
+		$(function(){
+			$("input[name='nickname']").on("change", function(){
+				var s_nickname = $('#nickname').val();
+							var regExpId = /^[가-힣a-zA-Z0-9]+$/;
+				$.ajax({
+					data : {nickname : s_nickname},
+					url : "/event/check_Nickname",
+					type : "POST",
+					success : function(data) {
+						if(data == ""){
+							can_signup[1] = 0;
+							$("#validation_Nickname").css('color', 'red');
+							$("#validation_Nickname").text("Enter your Nickname");
+						}
+						else if(data == '0'){
+							if(s_nickname.length >= 3 && s_nickname.length <= 10)
+							{
+                                                                // 닉네임 금칙어
+                                if(s_nickname.includes('fuck') || s_nickname.includes('시발') || s_nickname.includes('sex') || s_nickname.includes('섹스') || s_nickname.includes('FUCK') || s_nickname.includes('Fuck') || s_nickname.includes('운영자') || s_nickname.includes('admin')
+                                  || s_nickname.includes('Admin') || s_nickname.includes('pussy') || s_nickname.includes('dick') || s_nickname.includes('Pussy') || s_nickname.includes('Dick') || s_nickname.includes('보지') || s_nickname.includes('자지') || s_nickname.includes('개새끼')
+                                  || s_nickname.includes('병신') || s_nickname.includes('좆') || s_nickname.includes('운영진'))
+                                {
+                                    can_signup[1] = 0;
+                                    $("#validation_Nickname").css('color', 'red');
+    						        $("#validation_Nickname").text("Be Kind");
+                                    
+                                }
+                                
+								else if(s_nickname.match(regExpId) != null)
+								{
+									can_signup[1] = 1;
+									$("#validation_Nickname").css('color', 'blue');
+									$("#validation_Nickname").text("A great Nickname !");
+								}
+								else
+								{
+									can_signup[1] = 0;
+									$("#validation_Nickname").css('color', 'red');
+									$("#validation_Nickname").text("Invalid Nickname");
+								}
+							}
+							else
+							{
+								can_signup[1] = 0;
+															$("#validation_Nickname").css('color', 'red');
+								$("#validation_Nickname").text("Only 3 ~ 10 letters");
+							}
+						}
+						else if(data == '1')
+						{
+													$("#validation_Nickname").css('color', 'red');
+							can_signup[1] = 0;
+							if(s_nickname.length >= 3 && s_nickname.length <= 10)
+								$("#validation_Nickname").text("Nickname already in use");
+							else
+								$("#validation_Nickname").text("Only 3 ~ 10 letters");
+						}
+					},
+					error : function(error){
+						can_signup[1] = 0;
+						alert("error : " + error);
+					}
+				});
+			});
+		});
+
+	// 비밀번호 유효성 검사
+		$(function(){
+			$("input[name='password']").on("change", function(){
+				var s_password = $('#password').val();
+				var num = s_password.search(/[0-9]/g);
+				var eng = s_password.search(/[a-z]/ig);
+				var spe = s_password.search(/[`~!@@#$%^&*|₩₩₩'₩";:₩/?]/gi);
+							if(s_password == "")
+							{
+									can_signup[2] = 0;
+									$("#validation_password").css('color', 'red');
+									$("#validation_password").text("Enter your Password");
+							}
+				else if(s_password.length < 8 || s_password.length > 20)
+				{
+					can_signup[2] = 0;
+									$("#validation_password").css('color', 'red');
+					$("#validation_password").text("At least 8 letters");
+				}
+
+				else if(s_password.search(/\s/) != -1)
+				{
+					can_signup[2] = 0;
+									$("#validation_password").css('color', 'red');
+					$("#validation_password").text("You can't enter space !");
+				}
+				else if(num < 0 || eng < 0 || spe < 0)
+				{
+					can_signup[2] = 0;
+									$("#validation_password").css('color', 'red');
+					$("#validation_password").text("Please make a mixed password");
+				}
+				else
+				{
+					can_signup[2] = 1;
+					$("#validation_password").css('color', 'blue');
+					$("#validation_password").text("GOOD");
+				}
+			});
+		});
+
+	// 비밀번호 확인 일치하는지
+		$(function(){
+			$("input[name='password2']").on("change", function(){
+				var s_password = $('#password').val();
+				var s_password2 = $('#password2').val();
+
+				if(s_password == s_password2)
+				{
+					if(can_signup[2] == 0)
+					{
+						can_signup[3] = 0;
+											$("#validation_password2").css('color', 'red');
+						$("#validation_password2").text("Please enter it correctly");
+					}
+					else
+					{
+						can_signup[3] = 1;
+						$("#validation_password2").css('color', 'blue');
+						$("#validation_password2").text("GOOD");
+					}
+				}
+				else
+				{
+									can_signup[3] = 0;
+									$("#validation_password2").css('color', 'red');
+									if(s_password2 == "")
+									{
+											$("#validation_password2").text("Enter your Password");
+									}
+					else $("#validation_password2").text("It doesn't match");
+				}
+			});
+		});
+
+	// 회원가입 버튼 이벤트
+		$(function(){
+			$('#enroll_nickname').click(function(){
+				if(can_signup[0] && can_signup[1] && can_signup[2] && can_signup[3])
+				{
+					alert('SUCCESS');
+					var s_id = $('#id').val();
+					var s_email = $('#email').text();
+					var s_gender = $('#gender').val();
+					var s_nickname = $('#nickname').val();
+					var s_password = $('#password').val();
+					$.ajax({
+						data: {id: s_id, password: s_password, nickname: s_nickname, email: s_email, gender: s_gender},
+						url: "/process/signUP",
+						type: "POST",
+						success: function(data){
+							window.location.href = "/public/login.html";
+						}
+					});
+				}
+				else
+				{
+					$('#enroll_nickname').attr('type', 'button');
+					alert('Please check your form')
+				}
+			});
+		});
+</script>
+</head>
+<body>
+
+
+	<div class="container-login100" style="background-image: url('/public/FindID_form/images/bg-01.jpg');">
+		<div class="wrap-login100 p-l-55 p-r-55 p-t-80 p-b-30">
+			<form class="login100-form validate-form" action="/process/signUp" method="post">
+				<span class="login100-form-title p-b-37">
+					Sign Up Oauth
+				</span>
+
+				<div class="wrap-input100 m-b-5">
+					<input class="input100" type="text" id="email" name="email" readonly="true" style="display: none;">
+					<span class="focus-input100"></span>
+				</div>
+				<div style="color: grey; font-size: 12px"></div>
+
+				<div class="wrap-input100 m-b-5 m-t-10">
+					<input class="input100" type="text" id="id" name="id" placeholder="id" maxlength="12">
+					<span class="focus-input100"></span>
+				</div>
+				<div style="color: grey; font-size: 12px">Only 4 ~ 12 lowercase letters and numbers</div>
+				<div style="font-size: 14px;" id="validation_ID"></div>
+
+				<div class="wrap-input100 m-b-5 m-t-10">
+					<input class="input100" type="text" id="nickname" name="nickname" placeholder="nickname" maxlength="10">
+					<span class="focus-input100"></span>
+				</div>
+				<div style="color: grey; font-size: 12px">Only 3 ~ 10 letters and numbers</div>
+				<div id="validation_Nickname"></div>
+
+				<div class="wrap-input100 m-b-5 m-t-10">
+					<input class="input100" type="password" id="password" name="password" placeholder="password" maxlength="20">
+					<span class="focus-input100"></span>
+				</div>
+				<div style="color: grey; font-size: 12px">Mix at least 8 letters a-z, 0-9, !-)</div>
+				<div style="font-size: 14px;" id="validation_password"></div>
+
+				<div class="wrap-input100 m-b-5 m-t-10">
+					<input class="input100" type="password" id="password2" name="password2" placeholder="password check" maxlength="20">
+					<span class="focus-input100"></span>
+				</div>
+				<div style="color: grey; font-size: 12px">Check</div>
+				<div style="font-size: 14px;" id="validation_password2"></div>
+
+				<div class="col-2" style="display: none;">
+						<div class="input-group">
+								<label class="label">Gender</label>
+								<div class="p-t-10">
+										<label class="radio-container m-r-45">Male
+												<input type="radio" checked="checked" id="gender" name="gender">
+												<span class="checkmark"></span>
+										</label>
+										<label class="radio-container">Female
+												<input type="radio" name="gender">
+												<span class="checkmark"></span>
+										</label>
+								</div>
+						</div>
+				</div>
+
+				<div class="container-login100-form-btn m-t-30">
+					<button class="login100-form-btn" type="button" id="enroll_nickname" name="enroll_nickname">
+						Desicion account
+					</button>
+				</div>
+
+				<div class="flex-c p-b-112"></div>
+
+				<div class="text-center">
+					<a href="/public/login.html" class="txt2 hov1">
+						Go login page
+					</a>
+				</div>
+
+			</form>
+
+
+		</div>
+	</div>
+
+
+
+	<div id="dropDownSelect1"></div>
+
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/bootstrap/js/popper.js"></script>
+	<script src="/public/FindID_form/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/daterangepicker/moment.min.js"></script>
+	<script src="/public/FindID_form/vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+	<script src="/public/FindID_form/js/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>:: socket.io.chat ::</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script src="/public/chatting_form/js/join.js"></script>
+<script type="text/javascript">
+  $(function(){
+    $('#checkbox').on('click', function(){
+      var checked = $('#checkbox').is(":checked")
+      if(checked)
+      {
+        console.log('shit');
+        $('#show_password_div').css('display', 'block');
+      }
+      else $('#show_password_div').css('display', 'none');
+    })
+  });
+</script>
+</head>
+<body>
+<div data-role="page">
+    <div data-role="header">
+        <h1>Socket.io Chat</h1>
+    </div>
+    <div data-role="content">
+        <h3>입장하려는 방의 정보를 입력해주세요</h3>
+        <div data-role="fieldcontain">
+            <label for="textinput">방 이름</label>
+            <input id="inputRoom" value=""/>
+        </div>
+        <div data-role="fieldcontain">
+          <label for="textinput">비밀번호 적용</label>
+          <input type="checkbox" id="checkbox" name="checkbox" style="top: 20">
+        </div>
+        <div data-role="fieldcontain" id=show_password_div style="display: none;">
+            <label for="textinput">비밀번호</label>
+            <input id="roomPW" value=""/>
+        </div>
+        <input type ="button" id="startChatting" value="채팅 시작"/>
+        </div>
+</div>
+<div data-role="page" id="chatpage">
+    <div data-role="header">
+        <h1>
+            <span id="roomName"></span>
+            &nbsp;:&nbsp;
+            <span id="userCount">0</span>
+        </h1>
+    </div>
+	<div id ="s_left">
+	
+	</div>
+	<div data-role="content">
+	   <ul id="content" data-role="listview" data-inset="true"></ul>
+	   <input id="inputMessage" value=""/>
+		<input type="button" id="submit" value="입력" data-thema="b"/>
+		<input type="button" id="exit" value="방 나가기" class="ui-btn ui-btn-b"/>
+    </div>
+</div>
+<div id="s_right">
+
+</div>
+</body>
+</html>
